@@ -16,7 +16,7 @@ fn app() -> Html {
     // State for the two textboxes
     let boy_text_box = use_state(|| "174".to_string());
     let kilo_text_box = use_state(|| "75".to_string());
-    let bmi_text_box = use_state(|| String::new());
+    let bmi_text_box = use_state(|| "24".to_string());
 
 
 
@@ -26,10 +26,17 @@ fn app() -> Html {
     let boy_value = use_state(|| 174);
     let kilo_value = use_state(|| 75);
 
+    let bmi_desc = use_state(|| "".to_string());
+
     let on_boy_text_change = {
         let boy_text_box = boy_text_box.clone();
         let boy_parse_result = boy_parse_result.clone();
         let boy_value = boy_value.clone();
+        let kilo_parse_result = kilo_parse_result.clone();
+        let kilo_value = kilo_value.clone();
+        let bmi_text_box = bmi_text_box.clone();
+        let bmi_desc = bmi_desc.clone();
+
         Callback::from(move |e: InputEvent| {
             let input: web_sys::HtmlInputElement = e.target_unchecked_into();
             boy_text_box.set(input.value());
@@ -40,6 +47,15 @@ fn app() -> Html {
                 boy_value.set(boy_v);
             }
 
+            if *boy_parse_result && *kilo_parse_result{
+                console::log_1(&"Boy change".into());
+                let result_str = calculate_bmi(*boy_value, *kilo_value);
+                bmi_text_box.set(result_str.0);
+                bmi_desc.set(lookup_description(result_str.1));
+            }else {
+                console::log_1(&"Parse error".into());
+            }
+
 
         })
     };
@@ -48,6 +64,11 @@ fn app() -> Html {
         let kilo_text_box = kilo_text_box.clone();
         let kilo_parse_result = kilo_parse_result.clone();
         let kilo_value = kilo_value.clone();
+        let bmi_text_box = bmi_text_box.clone();
+        let boy_parse_result = boy_parse_result.clone();
+        let bmi_desc = bmi_desc.clone();
+
+        let boy_value = boy_value.clone();
         Callback::from(move |e: InputEvent| {
             let input: web_sys::HtmlInputElement = e.target_unchecked_into();
             kilo_text_box.set(input.value());
@@ -58,31 +79,13 @@ fn app() -> Html {
             if let Ok(kilo_v) = result{
                 kilo_value.set(kilo_v);
             }
-        })
-    };
 
-    fn calculate_bmi( boy:u32,kilo:u32){
-
-    }
-
-    let calculate = {
-
-       let bmi_text_box = bmi_text_box.clone();
-
-        let boy_parse_result = boy_parse_result.clone();
-        let kilo_parse_result = kilo_parse_result.clone();
-
-        let boy_value = boy_value.clone();
-        let kilo_value = kilo_value.clone();
-        Callback::from(move |_| {
-
-           if *boy_parse_result && *kilo_parse_result{
-               console::log_1(&"Calc".into());
-               let boy_f = *boy_value as f32 / 100.0;
-               let bmi = *kilo_value as f32 / (boy_f*boy_f) ;
-               console::log_1(&format!("BMI {}", bmi).into());
-               bmi_text_box.set(format!("{:.2} kg/m2", bmi).to_string());
-           }else {
+            if *boy_parse_result && *kilo_parse_result{
+                console::log_1(&"Kilo change".into());
+                let result_str = calculate_bmi(*boy_value, *kilo_value);
+                bmi_text_box.set(result_str.0);
+                bmi_desc.set(lookup_description(result_str.1));
+            }else {
                 console::log_1(&"Parse error".into());
             }
 
@@ -90,6 +93,31 @@ fn app() -> Html {
         })
     };
 
+    fn calculate_bmi( boy:u32,kilo:u32) -> (String, f32){
+        let boy_f = boy as f32 / 100.0;
+        let bmi = kilo as f32 / (boy_f*boy_f) ;
+
+        (format!("{:.2}", bmi), bmi)
+
+    }
+
+    fn lookup_description( val : f32) ->String{
+
+
+        if val > 30.0{
+            return "Obesity".to_string();
+        }
+
+        if val > 25.0{
+            return "Overweight".to_string();
+        }
+
+        if val > 18.5{
+            return "Normal".to_string();
+        }
+
+        "Underweight".to_string()
+    }
 
 
     html! {
@@ -97,7 +125,7 @@ fn app() -> Html {
             <h1>{ "BMI Hesaplayıcı" }</h1>
 
             <label>
-                { "Boy : " }
+                { "Boy (cm) : " }
                 <input
                     type="number"
                     value={(*boy_text_box).clone()}
@@ -115,7 +143,7 @@ fn app() -> Html {
             <br /><br />
 
             <label>
-                { "Kilo : " }
+                { "Kilo (kg) : " }
                 <input
                     type="number"
                     value={(*kilo_text_box).clone()}
@@ -129,28 +157,15 @@ fn app() -> Html {
                     }
                 />
             </label>
-            <br /><br />
 
-            <label>
-                { "BMI : " }
-                <input
-                    type="text"
-                    value={(*bmi_text_box).clone()}
-                    readonly=true
-
-                />
-            </label>
-
-            <br /><br />
-            <button onclick={calculate}>{ "Hesapla" }</button>
 
             <br />
 
             <hr />
 
-            <h3>{ "Debug view" }</h3>
-            <p>{ format!("Boy: {}", *boy_text_box) }</p>
-            <p>{ format!("Kilo: {}", *kilo_text_box) }</p>
+            <h3>{ "BMI" }</h3>
+            <p>{ format!("{} ({})", *bmi_text_box, *bmi_desc) }</p>
+
 
 
         </main>
