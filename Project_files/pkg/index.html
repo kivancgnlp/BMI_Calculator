@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>BMI Hesaplayıcı</title>
+<link rel="modulepreload" href="./BMI_calc-3b66dd4da14404b9.js" crossorigin="anonymous" integrity="sha384-SRCUQ1Y0I9oQqJUHdQ13W3tCuRucFBFE3MnQ3ZWFcldao6fVmsYEJdjtjtrkVJ35"><link rel="preload" href="./BMI_calc-3b66dd4da14404b9_bg.wasm" crossorigin="anonymous" integrity="sha384-UmgzP53J++ukasYi9RNHJw7N1dMtE01eZtDedWcMIb+bXooym9lUl3LK4QTSrL+s" as="fetch" type="application/wasm"></head>
+<body>
+<div id="root"></div>
+<!-- Trunk will inject the script that loads the WASM -->
+
+<script type="module">
+import init, * as bindings from './BMI_calc-3b66dd4da14404b9.js';
+const wasm = await init({ module_or_path: './BMI_calc-3b66dd4da14404b9_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+</html>
